@@ -700,6 +700,15 @@ document.addEventListener("click", e => {
     submit.disabled = true;
     submit.textContent = "전송 중...";
     const modeObj = T().modes.find(m => m.id === state.mode);
+    var diffName = state.diff;
+    if (state.diff && state.mode) {
+      var parts = state.diff.split("-");
+      var gi = +parts[0], oi = +parts[1];
+      var groups = T().difficulty[state.mode];
+      if (groups && groups[gi] && groups[gi].options[oi]) {
+        diffName = groups[gi].options[oi].name;
+      }
+    }
     const payload = {
       branch: BRANCH,
       teamName: state.teamName,
@@ -708,7 +717,7 @@ document.addEventListener("click", e => {
       yf: state.count.yf,
       ym: state.count.ym,
       mode: modeObj ? modeObj.title : state.mode,
-      diff: state.diff
+      diff: diffName
     };
     fetch(SHEET_URL, {
       method: "POST",
@@ -783,13 +792,22 @@ function shakeErr(id, msg){
 }
 
 function showDone(){
+  var diffName = state.diff;
+  if (state.diff && state.mode) {
+    var parts = state.diff.split("-");
+    var gi = +parts[0], oi = +parts[1];
+    var groups = T().difficulty[state.mode];
+    if (groups && groups[gi] && groups[gi].options[oi]) {
+      diffName = groups[gi].options[oi].name;
+    }
+  }
   view.innerHTML = `
     <div style="text-align:center;padding:80px 20px">
       <div style="font-size:64px;margin-bottom:20px">&#10004;</div>
       <div style="font-family:var(--display);font-size:32px;margin-bottom:12px">접수 완료!</div>
       <div style="font-family:var(--pretendard);font-size:15px;color:#555;line-height:1.6">
         ${esc(state.teamName)}<br>
-        ${esc(T().modes.find(m=>m.id===state.mode)?.title||"")} &middot; ${esc(state.diff)}<br>
+        ${esc(T().modes.find(m=>m.id===state.mode)?.title||"")} &middot; ${esc(diffName)}<br>
         성인 ${state.count.af+state.count.am}명 / 청소년 ${state.count.yf+state.count.ym}명
       </div>
       <div style="margin-top:40px;font-family:var(--pretendard);font-size:13px;color:#999">
