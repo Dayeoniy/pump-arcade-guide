@@ -524,6 +524,9 @@ const CONTENT = {
 };
 
 /* ── 상태 ─────────────────────────────────────── */
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzboNlHQ0ReOqf5USQGG75mG8SRk2uE0NbLTS4NTsbA7JN3y4YcfrFyDDsVPX3fu-Fe/exec";
+const BRANCH = "홍대점";
+
 const state = { lang: "ko", step: 0, mode: null, diff: null, teamName: "", count: { af: 0, am: 0, yf: 0, ym: 0 } };
 const T = () => CONTENT[state.lang];
 const view = document.getElementById("view");
@@ -661,7 +664,7 @@ function renderNav(){
   } else {
     nav.innerHTML =
       `<button class="btn ghost" data-go="2">${esc(u.back)}</button>
-       <button class="btn primary" data-go="0">${esc(u.start)}</button>`;
+       <button class="btn primary" data-submit>${esc(u.start)}</button>`;
   }
 }
 
@@ -691,6 +694,30 @@ document.addEventListener("click", e => {
 
   const diff = e.target.closest("[data-diff]");
   if (diff){ state.diff = diff.dataset.diff; state.step = 3; window.scrollTo({ top: 0, behavior: "smooth" }); render(); return; }
+
+  const submit = e.target.closest("[data-submit]");
+  if (submit){
+    submit.disabled = true;
+    submit.textContent = "전송 중...";
+    const modeObj = T().modes.find(m => m.id === state.mode);
+    const payload = {
+      branch: BRANCH,
+      teamName: state.teamName,
+      af: state.count.af,
+      am: state.count.am,
+      yf: state.count.yf,
+      ym: state.count.ym,
+      mode: modeObj ? modeObj.title : state.mode,
+      diff: state.diff
+    };
+    fetch(SHEET_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
+    .then(function(){ showDone(); })
+    .catch(function(){ showDone(); });
+    return;
+  }
 
   const go = e.target.closest("[data-go]");
   if (go){
@@ -753,6 +780,33 @@ function shakeErr(id, msg){
   el.classList.remove("shake");
   void el.offsetWidth;
   el.classList.add("shake");
+}
+
+function showDone(){
+  view.innerHTML = `
+    <div style="text-align:center;padding:80px 20px">
+      <div style="font-size:64px;margin-bottom:20px">&#10004;</div>
+      <div style="font-family:var(--display);font-size:32px;margin-bottom:12px">접수 완료!</div>
+      <div style="font-family:var(--pretendard);font-size:15px;color:#555;line-height:1.6">
+        ${esc(state.teamName)}<br>
+        ${esc(T().modes.find(m=>m.id===state.mode)?.title||"")} &middot; ${esc(state.diff)}<br>
+        성인 ${state.count.af+state.count.am}명 / 청소년 ${state.count.yf+state.count.ym}명
+      </div>
+      <div style="margin-top:40px;font-family:var(--pretendard);font-size:13px;color:#999">
+        5초 후 처음으로 돌아갑니다...
+      </div>
+    </div>`;
+  nav.innerHTML = "";
+  document.getElementById("dots").innerHTML = "";
+  setTimeout(function(){
+    state.step = 0;
+    state.mode = null;
+    state.diff = null;
+    state.teamName = "";
+    state.count = { af:0, am:0, yf:0, ym:0 };
+    window.scrollTo({ top:0, behavior:"smooth" });
+    render();
+  }, 5000);
 }
 
 render();
