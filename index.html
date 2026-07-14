@@ -717,7 +717,8 @@ document.addEventListener("click", e => {
       yf: state.count.yf,
       ym: state.count.ym,
       mode: modeObj ? modeObj.title : state.mode,
-      diff: diffName
+      diff: diffName,
+      total: state.count.af + state.count.am + state.count.yf + state.count.ym
     };
     fetch(SHEET_URL, {
       method: "POST",
