@@ -148,6 +148,11 @@ body{
 }
 .rule{height:2px;background:#000;margin:12px 0 40px}
 
+/* 팀명 입력 등 숫자 없는 헤더: 위아래 여백 축소 */
+.head-compact{height:120px}
+.head-compact + .rule{margin:6px 0 24px}
+.head-compact .page-title{top:50%}
+
 /* ── 모드 선택 카드 ────────────────────────────── */
 .mode{
   display:flex;flex-direction:column;align-items:center;
@@ -540,7 +545,7 @@ function header(i){
     return `<img class="head-img" src="${s.img}" alt="${s.title}"><div class="rule"></div>`;
   }
   if(!s.num){
-    return `<div class="head">
+    return `<div class="head head-compact">
         <div class="glow ${s.color}"></div>
         <div class="page-title team-header" data-t="${esc(s.title)}">${esc(s.title)}</div>
       </div><div class="rule"></div>`;
